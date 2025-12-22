@@ -122,6 +122,6 @@ PRD ini hanya merangkum constraint utama untuk memastikan keselarasan tim, tanpa
 - **Styling:** StyleSheet API atau styled-components untuk React Native.
 - **Navigation:** React Navigation (Stack Navigator, Tab Navigator) mengikuti struktur route di IA.
 - **State Management:** React Hooks dasar (useState, dsb.) untuk MVP.
-- **Local Storage:** AsyncStorage dari @react-native-async-storage/async-storage untuk menyimpan data lokal.
+- **Local Storage:** SQLite untuk penyimpanan data lokal yang terstruktur dan persisten.
 - **Platform Target:** iOS dan Android (cross-platform native mobile app).
 - **Development Tools:** Expo (opsional untuk rapid development) atau bare React Native CLI.

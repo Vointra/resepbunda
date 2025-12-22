@@ -1,74 +1,74 @@
-ID,Screen/Module,Task,Assigned To,Est. Hours,Dependencies,Priority
-0,Project Setup,,Dev 1,,,P0
-0.1,Project Setup,Init RN project + dependencies,Dev 1,2,-,P0
-0.2,Project Setup,"Navigation setup (Stack, Tab, Modal)",Dev 1,3,0.1,P0
-0.3,Project Setup,TypeScript types & interfaces,Dev 1,2,0.1,P0
-0.4,Project Setup,AsyncStorage helpers + mock data,Dev 1,2,0.1,P0
-0.5,Project Setup,Git workflow & PR template,Dev 1,1,0.1,P0
-1,Login Screen,,Dev 2,,,P0
-1.1,Login Screen,UI: form email & password,Dev 2,2,0.2,P0
-1.2,Login Screen,Logic: validate & save to storage (mock),Dev 2,2,"0.4, 1.1",P0
-1.3,Login Screen,Forgot password (mailto link),Dev 2,1,1.1,P1
-2,Home Screen,,Dev 3,,,P0
-2.1,Home Screen,Recipe card component,Dev 3,3,0.3,P0
-2.2,Home Screen,Feed layout dengan FlatList,Dev 3,2,2.1,P0
-2.3,Home Screen,Search bar,Dev 3,2,2.2,P1
-2.4,Home Screen,Category filter chips,Dev 3,2,2.2,P1
-2.5,Home Screen,"Filter logic (search, category, privacy)",Dev 3,3,"2.3, 2.4",P1
-3,Recipe Detail Screen,,Dev 4,,,P0
-3.1,Recipe Detail Screen,Layout: header dengan image & title,Dev 4,2,0.2,P0
-3.2,Recipe Detail Screen,Ingredients section,Dev 4,2,3.1,P0
-3.3,Recipe Detail Screen,Steps section (numbered),Dev 4,2,3.1,P0
-3.4,Recipe Detail Screen,Save/unsave button + logic,Dev 4,2,"0.4, 3.1",P0
-4,My Recipes Screen,,Dev 5,,,P0
-4.1,My Recipes Screen,Layout dengan tabs (Published/Draft),Dev 5,2,2.1,P0
-4.2,My Recipes Screen,Filter recipes by authorId,Dev 5,2,"0.4, 4.1",P0
-4.3,My Recipes Screen,Empty state component,Dev 5,2,4.1,P1
-4.4,My Recipes Screen,Edit & delete actions,Dev 5,2,4.1,P1
-5,Saved Recipes Screen,,Dev 6,,,P0
-5.1,Saved Recipes Screen,Layout dengan FlatList,Dev 6,2,2.1,P0
-5.2,Saved Recipes Screen,Filter by savedRecipeIds,Dev 6,2,"0.4, 5.1",P0
-5.3,Saved Recipes Screen,Empty state (belum ada saved),Dev 6,1,5.1,P1
-6,Create/Edit Recipe Screen,,Dev 7,,,P0
-6.1,Create/Edit Recipe Screen,"Form UI: title, description, category",Dev 7,3,0.3,P0
-6.2,Create/Edit Recipe Screen,Time & difficulty inputs,Dev 7,2,6.1,P0
-6.3,Create/Edit Recipe Screen,Image picker integration,Dev 7,3,"0.1, 6.1",P0
-6.4,Create/Edit Recipe Screen,Dynamic ingredients (add/remove),Dev 7,3,6.1,P0
-6.5,Create/Edit Recipe Screen,Dynamic steps (add/remove),Dev 7,3,6.1,P0
-6.6,Create/Edit Recipe Screen,Privacy toggle (Switch),Dev 7,1,6.1,P0
-6.7,Create/Edit Recipe Screen,Save logic (Draft/Published),Dev 7,2,"0.4, 6.1",P0
-7,Profile Screen,,Dev 2,,,P0
-7.1,Profile Screen,"UI: avatar, name, bio display",Dev 2,2,"0.3, 1.2",P0
-7.2,Profile Screen,Edit profile form,Dev 2,3,7.1,P1
-7.3,Profile Screen,Logout button + logic,Dev 2,1,"0.4, 7.1",P0
-R,Code Review,,Reviewer,,,P0
-R.1,Code Review,Review: Setup & types,Reviewer,1,0.5,P0
-R.2,Code Review,Review: Login screen,Reviewer,1,1.3,P0
-R.3,Code Review,Review: Home screen,Reviewer,2,2.5,P0
-R.4,Code Review,Review: Recipe detail,Reviewer,1,3.4,P0
-R.5,Code Review,Review: My recipes,Reviewer,1,4.4,P0
-R.6,Code Review,Review: Saved recipes,Reviewer,1,5.3,P0
-R.7,Code Review,Review: Create/edit recipe,Reviewer,2,6.7,P0
-R.8,Code Review,Review: Profile screen,Reviewer,1,7.3,P0
-R.9,Code Review,Final integration review,Reviewer,2,All reviews,P1
-Q,QA Testing,,QA,,,P0
-Q.1,QA Testing,Test plan & setup environment,QA,2,0.2,P0
-Q.2,QA Testing,Test: Login screen,QA,2,R.2,P0
-Q.3,QA Testing,"Test: Home screen (search, filter)",QA,3,R.3,P0
-Q.4,QA Testing,"Test: Recipe detail (view, save)",QA,2,R.4,P0
-Q.5,QA Testing,"Test: My recipes (tabs, actions)",QA,2,R.5,P0
-Q.6,QA Testing,Test: Saved recipes,QA,2,R.6,P0
-Q.7,QA Testing,"Test: Create/edit (form, validation)",QA,4,R.7,P0
-Q.8,QA Testing,"Test: Profile (view, edit, logout)",QA,2,R.8,P0
-Q.9,QA Testing,Test: Navigation flow end-to-end,QA,2,Q.8,P0
-Q.10,QA Testing,Test: Data persistence,QA,2,Q.9,P0
-Q.11,QA Testing,Bug reporting & retesting,QA,4,Q.10,P1
-Q.12,QA Testing,Final acceptance test,QA,2,Q.11,P1
-B,Bug Fixes,,All Devs,,,P1
-B.1,Bug Fixes,Fix bugs: Login screen,Dev 2,2,Q.11,P1
-B.2,Bug Fixes,Fix bugs: Home screen,Dev 3,2,Q.11,P1
-B.3,Bug Fixes,Fix bugs: Recipe detail,Dev 4,1,Q.11,P1
-B.4,Bug Fixes,Fix bugs: My recipes,Dev 5,1,Q.11,P1
-B.5,Bug Fixes,Fix bugs: Saved recipes,Dev 6,1,Q.11,P1
-B.6,Bug Fixes,Fix bugs: Create/edit recipe,Dev 7,3,Q.11,P1
-B.7,Bug Fixes,Fix bugs: Profile screen,Dev 2,1,Q.11,P1
+ID,Screen/Module,Task,Assigned To,Status,Completed By,Dependencies,Priority,Est. Hours,Start Date,End Date,Final Info
+0,Project Setup,,Jumanta,Module Todo,,,P0,,12/19/2025,12/22/2025,; PIC: Jumanta
+0.1,Project Setup,Init RN project + dependencies,Jumanta,Done,Syahrul Ramadhan,,P0,2,12/19/2025,12/20/2025,Init RN project + dependencies; PIC: Jumanta; Done By: Syahrul Ramadhan; Review Date: 2025-12-22
+0.2,Project Setup,"Navigation setup (Stack, Tab, Modal)",Jumanta,Todo,,0.1,P0,3,12/20/2025,12/21/2025,"Navigation setup (Stack, Tab, Modal); PIC: Jumanta; DEPS: 0.1"
+0.3,Project Setup,TypeScript types & interfaces,Jumanta,Todo,,0.1,P0,2,12/21/2025,12/22/2025,TypeScript types & interfaces; PIC: Jumanta; DEPS: 0.1
+0.4,Project Setup,SQLite database helpers + mock data,Jumanta,Todo,,0.1,P0,2,12/21/2025,12/22/2025,SQLite database helpers + mock data; PIC: Jumanta; DEPS: 0.1
+0.5,Project Setup,Git workflow & PR template,Jumanta,Todo,,0.1,P0,1,12/21/2025,12/22/2025,Git workflow & PR template; PIC: Jumanta; DEPS: 0.1
+1,Login Screen,,Syahrul Ramadhan,Module Todo,,,P0,,12/21/2025,12/23/2025,; PIC: Syahrul Ramadhan
+1.1,Login Screen,UI: form email & password,Syahrul Ramadhan,Todo,,0.2,P0,2,12/21/2025,12/22/2025,UI: form email & password; PIC: Syahrul Ramadhan; DEPS: 0.2
+1.2,Login Screen,Logic: validate & save to storage (mock),Syahrul Ramadhan,Todo,,"0.4, 1.1",P0,2,12/22/2025,12/23/2025,"Logic: validate & save to storage (mock); PIC: Syahrul Ramadhan; DEPS: 0.4, 1.1"
+1.3,Login Screen,Forgot password (mailto link),Syahrul Ramadhan,Todo,,1.1,P1,1,12/22/2025,12/23/2025,Forgot password (mailto link); PIC: Syahrul Ramadhan; DEPS: 1.1
+2,Home Screen,,Zikri Firmansyah,Module Todo,,,P0,,12/22/2025,12/26/2025,; PIC: Zikri Firmansyah
+2.1,Home Screen,Recipe card component,Zikri Firmansyah,Todo,,0.3,P0,3,12/22/2025,12/23/2025,Recipe card component; PIC: Zikri Firmansyah; DEPS: 0.3
+2.2,Home Screen,Feed layout dengan FlatList,Zikri Firmansyah,Todo,,2.1,P0,2,12/23/2025,12/24/2025,Feed layout dengan FlatList; PIC: Zikri Firmansyah; DEPS: 2.1
+2.3,Home Screen,Search bar,Zikri Firmansyah,Todo,,2.2,P1,2,12/24/2025,12/25/2025,Search bar; PIC: Zikri Firmansyah; DEPS: 2.2
+2.4,Home Screen,Category filter chips,Zikri Firmansyah,Todo,,2.2,P1,2,12/24/2025,12/25/2025,Category filter chips; PIC: Zikri Firmansyah; DEPS: 2.2
+2.5,Home Screen,"Filter logic (search, category, privacy)",Zikri Firmansyah,Todo,,"2.3, 2.4",P1,3,12/25/2025,12/26/2025,"Filter logic (search, category, privacy); PIC: Zikri Firmansyah; DEPS: 2.3, 2.4"
+3,Recipe Detail Screen,,Deni Hermawan,Module Todo,,,P0,,12/21/2025,12/23/2025,; PIC: Deni Hermawan
+3.1,Recipe Detail Screen,Layout: header dengan image & title,Deni Hermawan,Todo,,0.2,P0,2,12/21/2025,12/22/2025,Layout: header dengan image & title; PIC: Deni Hermawan; DEPS: 0.2
+3.2,Recipe Detail Screen,Ingredients section,Deni Hermawan,Todo,,3.1,P0,2,12/22/2025,12/23/2025,Ingredients section; PIC: Deni Hermawan; DEPS: 3.1
+3.3,Recipe Detail Screen,Steps section (numbered),Deni Hermawan,Todo,,3.1,P0,2,12/22/2025,12/23/2025,Steps section (numbered); PIC: Deni Hermawan; DEPS: 3.1
+3.4,Recipe Detail Screen,Save/unsave button + logic,Deni Hermawan,Todo,,"0.4, 3.1",P0,2,12/22/2025,12/23/2025,"Save/unsave button + logic; PIC: Deni Hermawan; DEPS: 0.4, 3.1"
+4,My Recipes Screen,,Vointra Namara Fidelito,Module Todo,,,P0,,12/23/2025,12/25/2025,; PIC: Vointra Namara Fidelito
+4.1,My Recipes Screen,Layout dengan tabs (Published/Draft),Vointra Namara Fidelito,Todo,,2.1,P0,2,12/23/2025,12/24/2025,Layout dengan tabs (Published/Draft); PIC: Vointra Namara Fidelito; DEPS: 2.1
+4.2,My Recipes Screen,Filter recipes by authorId,Vointra Namara Fidelito,Todo,,"0.4, 4.1",P0,2,12/24/2025,12/25/2025,"Filter recipes by authorId; PIC: Vointra Namara Fidelito; DEPS: 0.4, 4.1"
+4.3,My Recipes Screen,Empty state component,Vointra Namara Fidelito,Todo,,4.1,P1,2,12/24/2025,12/25/2025,Empty state component; PIC: Vointra Namara Fidelito; DEPS: 4.1
+4.4,My Recipes Screen,Edit & delete actions,Vointra Namara Fidelito,Todo,,4.1,P1,2,12/24/2025,12/25/2025,Edit & delete actions; PIC: Vointra Namara Fidelito; DEPS: 4.1
+5,Saved Recipes Screen,,Muhammad Syahid Azhar Azizi,Module Todo,,,P0,,12/23/2025,12/25/2025,; PIC: Muhammad Syahid Azhar Azizi
+5.1,Saved Recipes Screen,Layout dengan FlatList,Muhammad Syahid Azhar Azizi,Todo,,2.1,P0,2,12/23/2025,12/24/2025,Layout dengan FlatList; PIC: Muhammad Syahid Azhar Azizi; DEPS: 2.1
+5.2,Saved Recipes Screen,Filter by savedRecipeIds,Muhammad Syahid Azhar Azizi,Todo,,"0.4, 5.1",P0,2,12/24/2025,12/25/2025,"Filter by savedRecipeIds; PIC: Muhammad Syahid Azhar Azizi; DEPS: 0.4, 5.1"
+5.3,Saved Recipes Screen,Empty state (belum ada saved),Muhammad Syahid Azhar Azizi,Todo,,5.1,P1,1,12/24/2025,12/25/2025,Empty state (belum ada saved); PIC: Muhammad Syahid Azhar Azizi; DEPS: 5.1
+6,Create/Edit Recipe Screen,,Dyo Aristo,Module Todo,,,P0,,12/22/2025,12/24/2025,; PIC: Dyo Aristo
+6.1,Create/Edit Recipe Screen,"Form UI: title, description, category",Dyo Aristo,Todo,,0.3,P0,3,12/22/2025,12/23/2025,"Form UI: title, description, category; PIC: Dyo Aristo; DEPS: 0.3"
+6.2,Create/Edit Recipe Screen,Time & difficulty inputs,Dyo Aristo,Todo,,6.1,P0,2,12/23/2025,12/24/2025,Time & difficulty inputs; PIC: Dyo Aristo; DEPS: 6.1
+6.3,Create/Edit Recipe Screen,Image picker integration,Dyo Aristo,Todo,,"0.1, 6.1",P0,3,12/23/2025,12/24/2025,"Image picker integration; PIC: Dyo Aristo; DEPS: 0.1, 6.1"
+6.4,Create/Edit Recipe Screen,Dynamic ingredients (add/remove),Dyo Aristo,Todo,,6.1,P0,3,12/23/2025,12/24/2025,Dynamic ingredients (add/remove); PIC: Dyo Aristo; DEPS: 6.1
+6.5,Create/Edit Recipe Screen,Dynamic steps (add/remove),Dyo Aristo,Todo,,6.1,P0,3,12/23/2025,12/24/2025,Dynamic steps (add/remove); PIC: Dyo Aristo; DEPS: 6.1
+6.6,Create/Edit Recipe Screen,Privacy toggle (Switch),Dyo Aristo,Todo,,6.1,P0,1,12/23/2025,12/24/2025,Privacy toggle (Switch); PIC: Dyo Aristo; DEPS: 6.1
+6.7,Create/Edit Recipe Screen,Save logic (Draft/Published),Dyo Aristo,Todo,,"0.4, 6.1",P0,2,12/23/2025,12/24/2025,"Save logic (Draft/Published); PIC: Dyo Aristo; DEPS: 0.4, 6.1"
+7,Profile Screen,,Syahrul Ramadhan,Module Todo,,,P0,,12/23/2025,12/25/2025,; PIC: Syahrul Ramadhan
+7.1,Profile Screen,"UI: avatar, name, bio display",Syahrul Ramadhan,Todo,,"0.3, 1.2",P0,2,12/23/2025,12/24/2025,"UI: avatar, name, bio display; PIC: Syahrul Ramadhan; DEPS: 0.3, 1.2"
+7.2,Profile Screen,Edit profile form,Syahrul Ramadhan,Todo,,7.1,P1,3,12/24/2025,12/25/2025,Edit profile form; PIC: Syahrul Ramadhan; DEPS: 7.1
+7.3,Profile Screen,Logout button + logic,Syahrul Ramadhan,Todo,,"0.4, 7.1",P0,1,12/24/2025,12/25/2025,Logout button + logic; PIC: Syahrul Ramadhan; DEPS: 0.4, 7.1
+R,Code Review,,R. Purba Kusuma,Module Todo,,,P0,,12/22/2025,12/26/2025,; PIC: R. Purba Kusuma
+R.1,Code Review,Review: Setup & types,R. Purba Kusuma,Done,,0.5,P0,1,12/22/2025,12/22/2025,"Review: Setup & types; PIC: R. Purba Kusuma; DEPS: 0.5; Review Date: 2025-12-22"
+R.2,Code Review,Review: Login screen,R. Purba Kusuma,Todo,,1.3,P0,1,12/23/2025,12/23/2025,Review: Login screen; PIC: R. Purba Kusuma; DEPS: 1.3
+R.3,Code Review,Review: Home screen,R. Purba Kusuma,Todo,,2.5,P0,2,12/26/2025,12/26/2025,Review: Home screen; PIC: R. Purba Kusuma; DEPS: 2.5
+R.4,Code Review,Review: Recipe detail,R. Purba Kusuma,Todo,,3.4,P0,1,12/23/2025,12/23/2025,Review: Recipe detail; PIC: R. Purba Kusuma; DEPS: 3.4
+R.5,Code Review,Review: My recipes,R. Purba Kusuma,Todo,,4.4,P0,1,12/25/2025,12/25/2025,Review: My recipes; PIC: R. Purba Kusuma; DEPS: 4.4
+R.6,Code Review,Review: Saved recipes,R. Purba Kusuma,Todo,,5.3,P0,1,12/25/2025,12/25/2025,Review: Saved recipes; PIC: R. Purba Kusuma; DEPS: 5.3
+R.7,Code Review,Review: Create/edit recipe,R. Purba Kusuma,Todo,,6.7,P0,2,12/24/2025,12/24/2025,Review: Create/edit recipe; PIC: R. Purba Kusuma; DEPS: 6.7
+R.8,Code Review,Review: Profile screen,R. Purba Kusuma,Todo,,7.3,P0,1,12/25/2025,12/25/2025,Review: Profile screen; PIC: R. Purba Kusuma; DEPS: 7.3
+R.9,Code Review,Final integration review,R. Purba Kusuma,Todo,,All reviews,P1,2,12/25/2025,12/25/2025,Final integration review; PIC: R. Purba Kusuma; DEPS: All reviews
+Q,Lutfi Zain Testing,,Lutfi Zain,Module Todo,,,P0,,12/22/2025,12/31/2025,; PIC: Lutfi Zain
+Q.1,Lutfi Zain Testing,Test plan & setup environment,Lutfi Zain,Todo,,0.2,P0,2,12/22/2025,12/22/2025,Test plan & setup environment; PIC: Lutfi Zain; DEPS: 0.2
+Q.2,Lutfi Zain Testing,Test: Login screen,Lutfi Zain,Todo,,R.2,P0,2,12/23/2025,12/23/2025,Test: Login screen; PIC: Lutfi Zain; DEPS: R.2
+Q.3,Lutfi Zain Testing,"Test: Home screen (search, filter)",Lutfi Zain,Todo,,R.3,P0,3,12/26/2025,12/26/2025,"Test: Home screen (search, filter); PIC: Lutfi Zain; DEPS: R.3"
+Q.4,Lutfi Zain Testing,"Test: Recipe detail (view, save)",Lutfi Zain,Todo,,R.4,P0,2,12/23/2025,12/23/2025,"Test: Recipe detail (view, save); PIC: Lutfi Zain; DEPS: R.4
+Q.5,Lutfi Zain Testing,"Test: My recipes (tabs, actions)",Lutfi Zain,Todo,,R.5,P0,2,12/25/2025,12/25/2025,"Test: My recipes (tabs, actions); PIC: Lutfi Zain; DEPS: R.5
+Q.6,Lutfi Zain Testing,Test: Saved recipes,Lutfi Zain,Todo,,R.6,P0,2,12/25/2025,12/25/2025,Test: Saved recipes; PIC: Lutfi Zain; DEPS: R.6
+Q.7,Lutfi Zain Testing,"Test: Create/edit (form, validation)",Lutfi Zain,Todo,,R.7,P0,4,12/24/2025,12/24/2025,"Test: Create/edit (form, validation); PIC: Lutfi Zain; DEPS: R.7
+Q.8,Lutfi Zain Testing,"Test: Profile (view, edit, logout)",Lutfi Zain,Todo,,R.8,P0,2,12/25/2025,12/25/2025,"Test: Profile (view, edit, logout); PIC: Lutfi Zain; DEPS: R.8
+Q.9,Lutfi Zain Testing,Test: Navigation flow end-to-end,Lutfi Zain,Todo,,Q.8,P0,2,12/26/2025,12/26/2025,Test: Navigation flow end-to-end; PIC: Lutfi Zain; DEPS: Q.8
+Q.10,Lutfi Zain Testing,Test: Data persistence,Lutfi Zain,Todo,,Q.9,P0,2,12/27/2025,12/27/2025,Test: Data persistence; PIC: Lutfi Zain; DEPS: Q.9
+Q.11,Lutfi Zain Testing,Bug reporting & retesting,Lutfi Zain,Todo,,Q.10,P1,4,12/28/2025,12/28/2025,Bug reporting & retesting; PIC: Lutfi Zain; DEPS: Q.10
+Q.12,Lutfi Zain Testing,Final acceptance test,Lutfi Zain,Todo,,Q.11,P1,2,12/30/2025,12/31/2025,Final acceptance test; PIC: Lutfi Zain; DEPS: Q.11
+B,Bug Fixes,,All Devs,Module Todo,,,P1,,12/28/2025,12/30/2025,; PIC: All Devs
+B.1,Bug Fixes,Fix bugs: Login screen,Syahrul Ramadhan,Todo,,Q.11,P1,2,12/28/2025,12/30/2025,Fix bugs: Login screen; PIC: Syahrul Ramadhan; DEPS: Q.11
+B.2,Bug Fixes,Fix bugs: Home screen,Zikri Firmansyah,Todo,,Q.11,P1,2,12/28/2025,12/30/2025,Fix bugs: Home screen; PIC: Zikri Firmansyah; DEPS: Q.11
+B.3,Bug Fixes,Fix bugs: Recipe detail,Deni Hermawan,Todo,,Q.11,P1,1,12/28/2025,12/30/2025,Fix bugs: Recipe detail; PIC: Deni Hermawan; DEPS: Q.11
+B.4,Bug Fixes,Fix bugs: My recipes,Vointra Namara Fidelito,Todo,,Q.11,P1,1,12/28/2025,12/30/2025,Fix bugs: My recipes; PIC: Vointra Namara Fidelito; DEPS: Q.11
+B.5,Bug Fixes,Fix bugs: Saved recipes,Muhammad Syahid Azhar Azizi,Todo,,Q.11,P1,1,12/28/2025,12/30/2025,Fix bugs: Saved recipes; PIC: Muhammad Syahid Azhar Azizi; DEPS: Q.11
+B.6,Bug Fixes,Fix bugs: Create/edit recipe,Dyo Aristo,Todo,,Q.11,P1,3,12/28/2025,12/30/2025,Fix bugs: Create/edit recipe; PIC: Dyo Aristo; DEPS: Q.11
+B.7,Bug Fixes,Fix bugs: Profile screen,Syahrul Ramadhan,Todo,,Q.11,P1,1,12/28/2025,12/30/2025,Fix bugs: Profile screen; PIC: Syahrul Ramadhan; DEPS: Q.11
