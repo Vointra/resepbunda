@@ -15,4 +15,20 @@ export const schema = {
       logged_in_at TEXT NOT NULL
     );
   `,
+  recipes: `
+    CREATE TABLE IF NOT EXISTS recipes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      creator TEXT NOT NULL,
+      creatorType TEXT NOT NULL,
+      cookingTime TEXT NOT NULL,
+      category TEXT NOT NULL,
+      isPrivate INTEGER NOT NULL DEFAULT 0,
+      rating REAL,
+      calories TEXT,
+      ingredients TEXT,
+      steps TEXT
+    );
+  `,
 };
