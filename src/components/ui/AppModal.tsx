@@ -31,7 +31,7 @@ export default function AppModal({
 }: Props) {
   const accent =
     variant === "danger"
-      ? theme.colors.danger
+      ? theme.colors.danger.DEFAULT
       : variant === "success"
       ? theme.colors.primary.DEFAULT
       : theme.colors.primary.DEFAULT;
