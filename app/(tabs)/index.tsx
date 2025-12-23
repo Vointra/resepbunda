@@ -1,11 +1,20 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { ChefHat, Search, SlidersHorizontal } from "lucide-react-native";
+import { ChefHat, LogOut, Search, SlidersHorizontal } from "lucide-react-native"; // 1. Import LogOut icon
 import React, { useCallback, useMemo, useState } from "react";
-import { FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FilterModal, { SortOption } from "../../src/components/FilterModal";
 import RecipeCard from "../../src/components/RecipeCard";
+import { useAuth } from "../../src/providers/AuthProvider"; // 2. Import useAuth
 import { querySql } from "../../src/services/db";
 import { theme } from "../../src/theme";
 import type { Recipe } from "../../src/types/recipe";
@@ -21,33 +30,29 @@ const categories = [
 const parseNumber = (str: string) => parseInt(String(str).replace(/\D/g, "")) || 0;
 
 export default function HomeScreen() {
+  const { signOut } = useAuth(); // 3. Get signOut function
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [userName, setUserName] = useState("Chef"); // Default fallback name
+  const [userName, setUserName] = useState("Chef");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>("recommended");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // 1. Fetch Recipes & User Profile
   const fetchData = async () => {
     try {
-      // Ambil data resep
       const recipeResult = await querySql<Recipe>(
         "SELECT * FROM recipes WHERE isPrivate = 0 ORDER BY COALESCE(rating, 0) DESC, id DESC"
       );
       setRecipes(recipeResult);
 
-      // Ambil nama user yang sedang login
-      // Kita JOIN session dengan users berdasarkan email
       const userResult = await querySql<{ fullName: string }>(`
         SELECT u.fullName 
         FROM session s
         JOIN users u ON s.email = u.email
         WHERE s.id = 1
       `);
-      
+
       if (userResult.length > 0 && userResult[0].fullName) {
-        // Ambil kata pertama saja agar tidak terlalu panjang di header
         const firstName = userResult[0].fullName.split(" ")[0];
         setUserName(firstName);
       }
@@ -63,7 +68,6 @@ export default function HomeScreen() {
     }, [])
   );
 
-  // 2. Filter Logic
   const filteredAndSortedRecipes = useMemo(() => {
     let result = recipes.filter((recipe) => {
       const q = searchQuery.trim().toLowerCase();
@@ -95,7 +99,6 @@ export default function HomeScreen() {
     router.push(`/recipe/${recipeId}`);
   };
 
-  // 3. Render Header Component
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       {/* Greeting Section */}
@@ -106,6 +109,10 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.subGreetingText}>What do you want to cook today?</Text>
         </View>
+        {/* 4. Add Logout Button */}
+        <TouchableOpacity onPress={signOut} style={styles.logoutButton}>
+          <LogOut color={theme.colors.neutral.medium} size={24} />
+        </TouchableOpacity>
       </View>
 
       {/* Search Bar - Floating Style */}
@@ -121,8 +128,8 @@ export default function HomeScreen() {
           />
         </View>
 
-        <TouchableOpacity 
-          style={styles.filterButton} 
+        <TouchableOpacity
+          style={styles.filterButton}
           onPress={() => setFilterModalVisible(true)}
           activeOpacity={0.8}
         >
@@ -131,9 +138,9 @@ export default function HomeScreen() {
       </View>
 
       {/* Categories */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.categoryScrollContent}
         style={styles.categoryScroll}
       >
@@ -144,14 +151,14 @@ export default function HomeScreen() {
               key={category.id}
               style={[
                 styles.categoryChip,
-                isActive ? styles.categoryChipActive : styles.categoryChipInactive
+                isActive ? styles.categoryChipActive : styles.categoryChipInactive,
               ]}
               onPress={() => setSelectedCategory(category.id)}
             >
-              <Text 
+              <Text
                 style={[
-                  styles.categoryText, 
-                  isActive ? styles.categoryTextActive : styles.categoryTextInactive
+                  styles.categoryText,
+                  isActive ? styles.categoryTextActive : styles.categoryTextInactive,
                 ]}
               >
                 {category.name}
@@ -161,11 +168,9 @@ export default function HomeScreen() {
         })}
       </ScrollView>
 
-      {/* Section Title (Optional, adds structure) */}
+      {/* Section Title */}
       <View style={styles.sectionTitleContainer}>
-        <Text style={styles.sectionTitle}>
-          {searchQuery ? "Search Results" : "Fresh Recipes"}
-        </Text>
+        <Text style={styles.sectionTitle}>{searchQuery ? "Search Results" : "Fresh Recipes"}</Text>
       </View>
     </View>
   );
@@ -177,7 +182,7 @@ export default function HomeScreen() {
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
-             <RecipeCard recipe={item} onPress={() => handleRecipePress(item.id)} />
+            <RecipeCard recipe={item} onPress={() => handleRecipePress(item.id)} />
           </View>
         )}
         ListHeaderComponent={renderHeader}
@@ -208,16 +213,16 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F9FAFB", // Very light gray background for elegance
+    backgroundColor: "#F9FAFB",
   },
   listContent: {
     paddingBottom: 30,
   },
   cardWrapper: {
     paddingHorizontal: theme.spacing.md,
-    marginBottom: 4, // Space between cards handled by the card itself mostly
+    marginBottom: 4,
   },
-  
+
   // Header Styles
   headerContainer: {
     backgroundColor: "transparent",
@@ -227,6 +232,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
     paddingTop: theme.spacing.md,
     marginBottom: 20,
+    flexDirection: "row", // Align items horizontally
+    justifyContent: "space-between", // Push items to edges
+    alignItems: "center", // Vertically align items
   },
   greetingText: {
     fontSize: 26,
@@ -244,6 +252,16 @@ const styles = StyleSheet.create({
     color: theme.colors.neutral.medium,
     letterSpacing: 0.3,
   },
+  logoutButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB", // Same as inactive chip
+  },
 
   // Search Section
   searchContainer: {
@@ -260,7 +278,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     height: 50,
-    // Elegant soft shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -286,7 +303,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary.DEFAULT,
     justifyContent: "center",
     alignItems: "center",
-    // Button shadow
     shadowColor: theme.colors.primary.DEFAULT,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
@@ -310,9 +326,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   categoryChipInactive: {
-    backgroundColor: "#FFFFFF", // White background for inactive
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E5E7EB", // Very light border
+    borderColor: "#E5E7EB",
   },
   categoryChipActive: {
     backgroundColor: theme.colors.primary.DEFAULT,
