@@ -12,8 +12,12 @@ export const theme = {
       light: "#e2e8f0",
       bg: "#f8fafc",
     },
-    overlay: "rgba(248,250,252,0.92)", // slate-50 overlay
-    danger: "#ef4444",
+    danger: {
+      DEFAULT: "#ef4444",
+      bg: "#fef2f2",
+    },
+    shadow: "#000000",
+    overlay: "rgba(248,250,252,0.92)",
   },
   radius: { lg: 22, md: 16, sm: 12, pill: 999 },
   spacing: { xs: 8, sm: 12, md: 16, lg: 20, xl: 28 },

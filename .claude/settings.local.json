@@ -2,7 +2,22 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
-      "SlashCommand(/build)"
+      "SlashCommand(/build)",
+      "mcp__web-search-prime__webSearchPrime",
+      "mcp__MCP_DOCKER__list_pull_requests",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(del:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checkout:*)",
+      "Bash(npx:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(tasklist:*)",
+      "Bash(cmd.exe /c \"taskkill /F /PID 5920\")",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -1,10 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { Camera, ChefHat, LogOut, Plus, X } from "lucide-react-native";
-import React, { useCallback, useMemo, useState } from "react";
+import { Camera, ChevronRight, LogOut, Save, Trash2 } from "lucide-react-native";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   Image,
-  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useLogoutConfirmation } from "../../src/hooks/useLogoutConfirmation";
 import { useAuth } from "../../src/providers/AuthProvider";
 import { querySql } from "../../src/services/db";
 import { theme } from "../../src/theme";
@@ -24,71 +24,54 @@ type UserProfileRow = {
   fullName?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
-  badgePrimary?: string | null;
-  badgeSecondary?: string | null;
 };
 
+const MAX_BIO_LENGTH = 100;
+const APP_VERSION = "1.0.2";
+
 export default function Profile() {
-  const { session, signOut } = useAuth();
+  const { session } = useAuth();
+  const { confirmLogout } = useLogoutConfirmation();
   const insets = useSafeAreaInsets();
   const email = session?.email ?? "";
 
   const [profile, setProfile] = useState<UserProfileRow | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Modal State
-  const [editOpen, setEditOpen] = useState(false);
-  
-  // Form State
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
-  const [badgePrimary, setBadgePrimary] = useState("");
-  const [badgeSecondary, setBadgeSecondary] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-
-  const initials = useMemo(() => {
-    const n = (profile?.fullName ?? "").trim();
-    if (!n) return "RB";
-    const parts = n.split(/\s+/).slice(0, 2);
-    return parts.map((p) => p[0]?.toUpperCase()).join("");
-  }, [profile?.fullName]);
-
-  const openEdit = useCallback(() => {
-    setFullName(profile?.fullName ?? "");
-    setBio(profile?.bio ?? "");
-    setBadgePrimary(profile?.badgePrimary ?? "Recipe Newbie");
-    setBadgeSecondary(profile?.badgeSecondary ?? "Food Critic");
-    setAvatarUrl(profile?.avatarUrl ?? "");
-    setEditOpen(true);
-  }, [profile]);
+  const [saving, setSaving] = useState(false);
 
   const loadProfile = useCallback(async () => {
     if (!email) return;
-    setLoading(true);
     try {
       const rows = await querySql<UserProfileRow>(
-        `SELECT id, email, fullName, bio, avatarUrl, badgePrimary, badgeSecondary
-         FROM users WHERE email = ? LIMIT 1`,
+        `SELECT id, email, fullName, bio, avatarUrl FROM users WHERE email = ? LIMIT 1`,
         [email]
       );
 
       if (rows.length === 0) {
         await querySql(
-          `INSERT INTO users (email, fullName, bio, avatarUrl, badgePrimary, badgeSecondary)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [email, "", "", "", "Recipe Newbie", "Food Critic"]
+          `INSERT INTO users (email, fullName, bio, avatarUrl) VALUES (?, ?, ?, ?)`,
+          [email, "", "", ""]
         );
         const again = await querySql<UserProfileRow>(
-          `SELECT * FROM users WHERE email = ? LIMIT 1`, [email]
+          `SELECT * FROM users WHERE email = ? LIMIT 1`,
+          [email]
         );
-        setProfile(again[0] ?? null);
+        if (again[0]) {
+          setProfile(again[0]);
+          setFullName(again[0].fullName ?? "");
+          setBio(again[0].bio ?? "");
+          setAvatarUrl(again[0].avatarUrl ?? "");
+        }
       } else {
         setProfile(rows[0]);
+        setFullName(rows[0].fullName ?? "");
+        setBio(rows[0].bio ?? "");
+        setAvatarUrl(rows[0].avatarUrl ?? "");
       }
     } catch (e) {
       console.error("Failed to load profile", e);
-    } finally {
-      setLoading(false);
     }
   }, [email]);
 
@@ -101,346 +84,357 @@ export default function Profile() {
   const saveProfile = useCallback(async () => {
     if (!profile) return;
     const name = fullName.trim();
-    const bioText = bio.trim();
 
     if (!name) {
-      Alert.alert("Required", "Nama lengkap wajib diisi.");
+      Alert.alert("Diperlukan", "Nama lengkap wajib diisi.");
       return;
     }
 
+    setSaving(true);
     try {
       await querySql(
-        `UPDATE users
-         SET fullName = ?, bio = ?, avatarUrl = ?, badgePrimary = ?, badgeSecondary = ?
-         WHERE id = ?`,
-        [name, bioText, avatarUrl.trim(), badgePrimary.trim(), badgeSecondary.trim(), profile.id]
+        `UPDATE users SET fullName = ?, bio = ?, avatarUrl = ? WHERE id = ?`,
+        [name, bio.trim(), avatarUrl.trim(), profile.id]
       );
-      setEditOpen(false);
+      Alert.alert("Berhasil", "Profil berhasil disimpan.");
       await loadProfile();
-    } catch (e) {
+    } catch {
       Alert.alert("Error", "Gagal menyimpan profil.");
+    } finally {
+      setSaving(false);
     }
-  }, [profile, fullName, bio, avatarUrl, badgePrimary, badgeSecondary, loadProfile]);
+  }, [profile, fullName, bio, avatarUrl, loadProfile]);
+
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(
+      "Hapus Akun",
+      "Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: () => Alert.alert("Info", "Fitur hapus akun akan segera hadir."),
+        },
+      ]
+    );
+  }, []);
+
+  const handleChangePhoto = useCallback(() => {
+    Alert.alert("Info", "Fitur ubah foto akan segera hadir.");
+  }, []);
+
+  const handleBioChange = useCallback((text: string) => {
+    if (text.length <= MAX_BIO_LENGTH) {
+      setBio(text);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
-      {/* Top Header Bar */}
-      <View style={[styles.headerBar, { paddingTop: insets.top + 10 }]}>
-        <View style={styles.headerSpacer} />
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity onPress={signOut} style={styles.iconBtn}>
-          <LogOut size={20} color={theme.colors.neutral.dark} />
-        </TouchableOpacity>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + theme.spacing.sm }]}>
+        <Text style={styles.headerTitle}>Edit Profil &amp; Akun</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        
-        {/* Profile Card Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            {profile?.avatarUrl ? (
-              <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImg} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Avatar Section */}
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarWrapper}>
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
             ) : (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarFallbackText}>{initials}</Text>
+              <View style={styles.avatarPlaceholder}>
+                <Text style={styles.avatarInitials}>
+                  {(fullName || "RB").slice(0, 2).toUpperCase()}
+                </Text>
               </View>
             )}
-            <TouchableOpacity style={styles.editAvatarBtn} onPress={openEdit}>
-              <Camera size={14} color="white" />
+            <TouchableOpacity style={styles.cameraBtn} onPress={handleChangePhoto}>
+              <Camera size={20} color="white" />
             </TouchableOpacity>
           </View>
+          <Text style={styles.photoHint}>Ketuk untuk ubah foto</Text>
+        </View>
 
-          <Text style={styles.nameText}>
-            {profile?.fullName?.trim() ? profile.fullName : "Chef Unknown"}
-          </Text>
-          
-          <Text style={styles.bioText}>
-            {profile?.bio?.trim() ? profile.bio : "No bio yet. Start cooking!"}
-          </Text>
-
-          {/* Badges Row */}
-          <View style={styles.badgesRow}>
-             <View style={styles.badgePill}>
-                <ChefHat size={12} color={theme.colors.primary.dark} />
-                <Text style={styles.badgeText}>{profile?.badgePrimary || "Newbie"}</Text>
-             </View>
-             <View style={[styles.badgePill, styles.badgeSecondary]}>
-                <Text style={[styles.badgeText, { color: "#B45309" }]}>{profile?.badgeSecondary || "Foodie"}</Text>
-             </View>
+        {/* Form Section */}
+        <View style={styles.formSection}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Nama Lengkap</Text>
+            <TextInput
+              style={styles.input}
+              value={fullName}
+              onChangeText={setFullName}
+              placeholder="Masukkan nama lengkap"
+              placeholderTextColor={theme.colors.neutral.medium}
+            />
           </View>
 
-          {/* Stats Row (Dummy Data for Visual) */}
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>Recipes</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>2.4k</Text>
-              <Text style={styles.statLabel}>Followers</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>145</Text>
-              <Text style={styles.statLabel}>Following</Text>
-            </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Bio Singkat</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={bio}
+              onChangeText={handleBioChange}
+              placeholder="Ceritakan sedikit tentang anda..."
+              placeholderTextColor={theme.colors.neutral.medium}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+            <Text style={styles.charCount}>Maksimal {MAX_BIO_LENGTH} karakter</Text>
           </View>
 
-          {/* Edit Profile Button */}
-          <TouchableOpacity style={styles.editProfileBtn} onPress={openEdit}>
-             <Text style={styles.editProfileText}>Edit Profile</Text>
+          <TouchableOpacity
+            style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
+            onPress={saveProfile}
+            disabled={saving}
+          >
+            <Save size={20} color={theme.colors.neutral.dark} />
+            <Text style={styles.saveBtnText}>
+              {saving ? "Menyimpan..." : "Simpan Perubahan"}
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Content Section */}
-        <View style={styles.contentSection}>
-          <View style={styles.tabContainer}>
-            <View style={styles.activeTab}>
-              <Text style={styles.activeTabText}>My Recipes</Text>
-              <View style={styles.activeIndicator} />
-            </View>
-            <View style={styles.inactiveTab}>
-              <Text style={styles.inactiveTabText}>Saved</Text>
-            </View>
-          </View>
+        {/* Divider */}
+        <View style={styles.divider} />
 
-          {/* Grid Layout */}
-          <View style={styles.grid}>
-             {/* Create New Card */}
-             <TouchableOpacity style={styles.createCard} onPress={() => Alert.alert("Coming Soon")}>
-                <View style={styles.createIconBg}>
-                   <Plus size={24} color={theme.colors.primary.DEFAULT} />
-                </View>
-                <Text style={styles.createText}>New Recipe</Text>
-             </TouchableOpacity>
-
-             {/* Dummy Recipe 1 */}
-             <View style={styles.miniCard}>
-                <View style={styles.miniCardImagePlaceholder} />
-                <View style={styles.miniCardContent}>
-                   <Text style={styles.miniCardTitle}>Avocado Toast</Text>
-                   <Text style={styles.miniCardMeta}>12 mins • Easy</Text>
-                </View>
-             </View>
-
-              {/* Dummy Recipe 2 */}
-              <View style={styles.miniCard}>
-                <View style={styles.miniCardImagePlaceholder} />
-                <View style={styles.miniCardContent}>
-                   <Text style={styles.miniCardTitle}>Beef Steak</Text>
-                   <Text style={styles.miniCardMeta}>45 mins • Hard</Text>
-                </View>
-             </View>
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Edit Modal - Bottom Sheet Style */}
-      <Modal visible={editOpen} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-           <View style={styles.modalContainer}>
-              <View style={styles.modalHeader}>
-                 <Text style={styles.modalTitle}>Edit Profile</Text>
-                 <TouchableOpacity onPress={() => setEditOpen(false)} style={styles.closeBtn}>
-                    <X size={20} color={theme.colors.neutral.dark} />
-                 </TouchableOpacity>
+        {/* Account Actions */}
+        <View style={styles.actionsSection}>
+          <TouchableOpacity style={styles.logoutCard} onPress={confirmLogout}>
+            <View style={styles.logoutLeft}>
+              <View style={styles.logoutIconWrapper}>
+                <LogOut size={20} color={theme.colors.danger.DEFAULT} />
               </View>
-              
-              <ScrollView style={styles.formContainer}>
-                 <Field label="Full Name" value={fullName} onChangeText={setFullName} />
-                 <Field label="Bio" value={bio} onChangeText={setBio} multiline />
-                 <Field label="Avatar URL" value={avatarUrl} onChangeText={setAvatarUrl} />
-                 <View style={{flexDirection: 'row', gap: 10}}>
-                    <View style={{flex:1}}>
-                      <Field label="Badge 1" value={badgePrimary} onChangeText={setBadgePrimary} />
-                    </View>
-                    <View style={{flex:1}}>
-                      <Field label="Badge 2" value={badgeSecondary} onChangeText={setBadgeSecondary} />
-                    </View>
-                 </View>
-              </ScrollView>
+              <View>
+                <Text style={styles.logoutTitle}>Keluar</Text>
+                <Text style={styles.logoutDesc}>Keluar dari akun Anda saat ini</Text>
+              </View>
+            </View>
+            <ChevronRight size={20} color={theme.colors.neutral.light} />
+          </TouchableOpacity>
 
-              <TouchableOpacity style={styles.saveButton} onPress={saveProfile}>
-                 <Text style={styles.saveButtonText}>Save Changes</Text>
-              </TouchableOpacity>
-           </View>
+          <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
+            <Trash2 size={16} color={theme.colors.danger.DEFAULT} />
+            <Text style={styles.deleteBtnText}>Hapus Akun Saya</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
 
+        {/* Version Footer */}
+        <Text style={styles.versionText}>Versi Aplikasi {APP_VERSION}</Text>
+      </ScrollView>
     </View>
   );
 }
 
-function Field({ label, value, onChangeText, multiline }: { label: string, value: string, onChangeText: (v:string)=>void, multiline?: boolean }) {
-  return (
-    <View style={styles.fieldGroup}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <TextInput 
-        style={[styles.input, multiline && styles.inputMulti]} 
-        value={value} 
-        onChangeText={onChangeText}
-        multiline={multiline}
-        placeholder={`Enter your ${label.toLowerCase()}`}
-        placeholderTextColor={theme.colors.neutral.medium}
-      />
-    </View>
-  )
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" }, // Off-white elegant bg
-
-  // Header Bar
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 10,
-    backgroundColor: "#F9FAFB",
-    zIndex: 10,
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.neutral.bg,
   },
-  headerSpacer: { width: 40 }, // Balance the icon on right
-  headerTitle: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.neutral.dark },
-  iconBtn: { padding: 8, backgroundColor: "#fff", borderRadius: 20, borderWidth: 1, borderColor: "#E5E7EB" },
-
-  // Profile Section
-  profileSection: {
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 10,
-    paddingBottom: 24,
+  header: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.neutral.light,
+    backgroundColor: theme.colors.neutral.bg,
   },
-  avatarContainer: {
-    marginBottom: 16,
-    shadowColor: theme.colors.primary.DEFAULT,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+  headerTitle: {
+    fontSize: 18,
+    fontFamily: theme.font.bold,
+    color: theme.colors.neutral.dark,
+    letterSpacing: -0.3,
   },
-  avatarImg: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: "#fff" },
-  avatarFallback: { 
-    width: 100, height: 100, borderRadius: 50, 
-    backgroundColor: theme.colors.neutral.light, 
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 4, borderColor: "#fff"
+  scrollContent: {
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: 120,
   },
-  avatarFallbackText: { fontSize: 32, fontFamily: theme.font.bold, color: theme.colors.neutral.medium },
-  editAvatarBtn: {
-    position: 'absolute', bottom: 0, right: 0,
+  avatarSection: {
+    alignItems: "center",
+    paddingVertical: theme.spacing.xl,
+  },
+  avatarWrapper: {
+    position: "relative",
+    marginBottom: theme.spacing.md,
+  },
+  avatar: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    borderWidth: 4,
+    borderColor: "white",
+  },
+  avatarPlaceholder: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    backgroundColor: theme.colors.neutral.light,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 4,
+    borderColor: "white",
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  avatarInitials: {
+    fontSize: 36,
+    fontFamily: theme.font.bold,
+    color: theme.colors.neutral.medium,
+  },
+  cameraBtn: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: theme.colors.primary.DEFAULT,
-    padding: 8, borderRadius: 20,
-    borderWidth: 3, borderColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "white",
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  
-  nameText: { fontSize: 22, fontFamily: theme.font.bold, color: theme.colors.neutral.dark, marginBottom: 4 },
-  bioText: { fontSize: 14, fontFamily: theme.font.regular, color: theme.colors.neutral.medium, textAlign: 'center', paddingHorizontal: 20, lineHeight: 20 },
-
-  // Badges
-  badgesRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
-  badgePill: { 
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 12, paddingVertical: 6, 
-    borderRadius: 20, backgroundColor: theme.colors.primary.bg,
+  photoHint: {
+    fontSize: 12,
+    fontFamily: theme.font.medium,
+    color: theme.colors.neutral.medium,
   },
-  badgeSecondary: { backgroundColor: "#FFF7ED" },
-  badgeText: { fontSize: 12, fontFamily: theme.font.bold, color: theme.colors.primary.dark },
-
-  // Stats
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 24,
-    backgroundColor: "#fff",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    width: "100%",
-    justifyContent: 'space-between',
-    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2,
+  formSection: {
+    marginBottom: theme.spacing.xl,
   },
-  statItem: { alignItems: 'center', flex: 1 },
-  statNumber: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.neutral.dark },
-  statLabel: { fontSize: 12, color: theme.colors.neutral.medium, fontFamily: theme.font.medium },
-  statDivider: { width: 1, height: 24, backgroundColor: "#F3F4F6" },
-
-  // Edit Btn
-  editProfileBtn: {
-    marginTop: 20,
-    width: "100%",
-    paddingVertical: 12,
-    borderRadius: 12,
+  inputGroup: {
+    marginBottom: theme.spacing.xl,
+  },
+  label: {
+    fontSize: 14,
+    fontFamily: theme.font.semibold,
+    color: theme.colors.neutral.medium,
+    marginBottom: theme.spacing.xs,
+  },
+  input: {
+    backgroundColor: "white",
     borderWidth: 1,
     borderColor: theme.colors.neutral.light,
-    alignItems: 'center',
-    backgroundColor: "transparent",
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 14,
+    fontSize: 14,
+    fontFamily: theme.font.regular,
+    color: theme.colors.neutral.dark,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  editProfileText: { fontSize: 14, fontFamily: theme.font.bold, color: theme.colors.neutral.dark },
-
-  // Content
-  contentSection: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: 24,
-    minHeight: 500,
-    shadowColor: "#000", shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.02, shadowRadius: 10,
-    elevation: 5,
+  textArea: {
+    minHeight: 88,
+    textAlignVertical: "top",
   },
-  tabContainer: { flexDirection: 'row', marginBottom: 20 },
-  activeTab: { marginRight: 24, alignItems: 'center' },
-  activeTabText: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.neutral.dark },
-  activeIndicator: { width: 4, height: 4, borderRadius: 2, backgroundColor: theme.colors.primary.DEFAULT, marginTop: 4 },
-  inactiveTab: { alignItems: 'center' },
-  inactiveTabText: { fontSize: 16, fontFamily: theme.font.bold, color: theme.colors.neutral.medium },
-
-  // Grid
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  createCard: {
-    width: "48%", aspectRatio: 0.85,
-    borderRadius: 16, borderWidth: 2, borderColor: "#F3F4F6", borderStyle: 'dashed',
-    justifyContent: 'center', alignItems: 'center', gap: 12,
+  charCount: {
+    textAlign: "right",
+    fontSize: 12,
+    color: theme.colors.neutral.medium,
+    marginTop: 4,
   },
-  createIconBg: { width: 48, height: 48, borderRadius: 24, backgroundColor: theme.colors.primary.bg, justifyContent: 'center', alignItems: 'center' },
-  createText: { fontSize: 14, fontFamily: theme.font.bold, color: theme.colors.neutral.medium },
-  
-  miniCard: {
-    width: "48%", aspectRatio: 0.85,
-    borderRadius: 16, backgroundColor: "#fff",
-    borderWidth: 1, borderColor: "#F3F4F6",
-    overflow: 'hidden',
-    shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 3,
-  },
-  miniCardImagePlaceholder: { flex: 1, backgroundColor: theme.colors.neutral.light },
-  miniCardContent: { padding: 12 },
-  miniCardTitle: { fontSize: 14, fontFamily: theme.font.bold, color: theme.colors.neutral.dark, marginBottom: 4 },
-  miniCardMeta: { fontSize: 11, color: theme.colors.neutral.medium },
-
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: 'flex-end' },
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, maxHeight: "85%",
-  },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontFamily: theme.font.bold, color: theme.colors.neutral.dark },
-  closeBtn: { padding: 4, backgroundColor: "#F3F4F6", borderRadius: 20 },
-  
-  formContainer: { marginBottom: 20 },
-  fieldGroup: { marginBottom: 16 },
-  fieldLabel: { fontSize: 12, fontFamily: theme.font.bold, color: theme.colors.neutral.dark, marginBottom: 8 },
-  input: {
-    backgroundColor: "#F9FAFB", borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12,
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, fontFamily: theme.font.regular, color: theme.colors.neutral.dark
-  },
-  inputMulti: { minHeight: 80, textAlignVertical: 'top' },
-  saveButton: {
+  saveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
     backgroundColor: theme.colors.primary.DEFAULT,
-    paddingVertical: 14, borderRadius: 14,
-    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: 14,
+    borderRadius: theme.radius.lg,
+    shadowColor: theme.colors.primary.DEFAULT,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 6,
   },
-  saveButtonText: { color: "white", fontSize: 15, fontFamily: theme.font.bold },
+  saveBtnDisabled: {
+    opacity: 0.7,
+  },
+  saveBtnText: {
+    fontSize: 14,
+    fontFamily: theme.font.bold,
+    color: theme.colors.neutral.dark,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.neutral.light,
+    marginVertical: theme.spacing.xl,
+  },
+  actionsSection: {
+    gap: theme.spacing.sm,
+  },
+  logoutCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "white",
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.sm,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoutLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
+  logoutIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.danger.bg,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  logoutTitle: {
+    fontSize: 14,
+    fontFamily: theme.font.bold,
+    color: theme.colors.neutral.dark,
+  },
+  logoutDesc: {
+    fontSize: 12,
+    fontFamily: theme.font.regular,
+    color: theme.colors.neutral.medium,
+  },
+  deleteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    marginTop: theme.spacing.xs,
+  },
+  deleteBtnText: {
+    fontSize: 12,
+    fontFamily: theme.font.semibold,
+    color: theme.colors.danger.DEFAULT,
+  },
+  versionText: {
+    textAlign: "center",
+    fontSize: 10,
+    fontFamily: theme.font.regular,
+    color: theme.colors.neutral.light,
+    marginTop: 32,
+  },
 });
