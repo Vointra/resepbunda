@@ -12,7 +12,7 @@ import { querySql, execSql } from '../services/db';
 const STATUSBAR_HEIGHT = Platform.OS === 'android' ? StatusBar.currentHeight || 24 : 44;
 
 const SavedRecipesScreen = () => {
-  const { session } = useAuth();
+  const { session } = useAuth(); // Kita butuh session.email di sini
   
   // STATE
   const [allData, setAllData] = useState<Recipe[]>([]);
@@ -21,12 +21,20 @@ const SavedRecipesScreen = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // --- LOGIC DATABASE MURNI ---
+  // --- LOGIC DATABASE DENGAN FILTER USER ---
   const fetchSavedData = async () => {
+    // Safety Check: Kalau gak login, jangan fetch apa-apa
+    if (!session?.email) {
+      setLoading(false);
+      setAllData([]);
+      setDisplayedData([]);
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // 1. Pastikan TABELNYA ada (Schema Only), tapi JANGAN ISI DATA.
+      // 1. Pastikan TABELNYA ada (Schema Only)
       await execSql(`
         CREATE TABLE IF NOT EXISTS saved_recipes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,16 +45,18 @@ const SavedRecipesScreen = () => {
         );
       `);
 
-      // 2. Query Real (JOIN)
-      // Hanya ambil data yang bener-bener ada di tabel saved_recipes
+      // 2. Query Real (JOIN + FILTER USER)
+      // Perhatikan tambahan: WHERE s.user_email = ?
       const result = await querySql<Recipe>(
         `SELECT r.* 
          FROM recipes r 
          JOIN saved_recipes s ON r.id = s.recipe_id 
-         ORDER BY s.created_at DESC`
+         WHERE s.user_email = ? 
+         ORDER BY s.created_at DESC`,
+        [session.email] // Parameter email dinamis
       );
       
-      console.log('Saved data fetched:', result.length);
+      console.log(`Saved data for ${session.email}:`, result.length);
       setAllData(result);
       setDisplayedData(result);
       
@@ -60,11 +70,13 @@ const SavedRecipesScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchSavedData();
-    }, [session])
+    }, [session?.email]) // Re-fetch kalau ganti akun
   );
 
-  // LOGIC HAPUS (AKTIFKAN SQL DELETE)
+  // LOGIC HAPUS (AKTIFKAN SQL DELETE DENGAN FILTER USER)
   const handleRemove = async (id: number) => {
+    if (!session?.email) return;
+
     Alert.alert("Hapus", "Yakin hapus dari koleksi?", [
       { text: "Batal", style: "cancel" },
       { 
@@ -72,10 +84,13 @@ const SavedRecipesScreen = () => {
         style: "destructive", 
         onPress: async () => {
           try {
-            // 1. Eksekusi Hapus dari Database Real
-            await execSql('DELETE FROM saved_recipes WHERE recipe_id = ?', [id]);
+            // Hapus spesifik punya user ini saja
+            await execSql(
+              'DELETE FROM saved_recipes WHERE recipe_id = ? AND user_email = ?', 
+              [id, session.email]
+            );
             
-            // 2. Update UI
+            // Update UI
             const newData = allData.filter(item => item.id !== id);
             setAllData(newData);
             setDisplayedData(newData);
@@ -166,23 +181,22 @@ const SavedRecipesScreen = () => {
           contentContainerStyle={[styles.listContent, displayedData.length === 0 && { flex: 1 }]}
           ListEmptyComponent={renderEmptyState}
           renderItem={({ item }) => (
-            // --- CUSTOM CARD: HORIZONTAL LAYOUT (SESUAI GUIDELINE) ---
+            // CUSTOM CARD
             <TouchableOpacity 
               style={styles.card} 
               activeOpacity={0.9}
               onPress={() => router.push(`/recipe/${item.id}`)}
             >
-              {/* GAMBAR KIRI */}
+              {/* GAMBAR */}
               <Image 
                 source={{ uri: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&h=200&fit=crop' }} 
                 style={styles.cardImage} 
               />
 
-              {/* KONTEN KANAN */}
+              {/* KONTEN */}
               <View style={styles.cardContent}>
                 <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
                 
-                {/* Creator */}
                 <View style={styles.metaRow}>
                   <Ionicons name="person-outline" size={12} color="#64748b" />
                   <Text style={styles.metaText}>
@@ -190,7 +204,6 @@ const SavedRecipesScreen = () => {
                   </Text>
                 </View>
 
-                {/* Badge Kuning Favorit */}
                 <View style={styles.statusRow}>
                   <Text style={styles.savedAtText}>Tersimpan</Text>
                   <View style={styles.dot} />
@@ -199,7 +212,6 @@ const SavedRecipesScreen = () => {
                   </View>
                 </View>
 
-                {/* Action Buttons */}
                 <View style={styles.actionRow}>
                   <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
                     <Ionicons name="time-outline" size={14} color="#64748b" />
@@ -207,7 +219,6 @@ const SavedRecipesScreen = () => {
                   </View>
 
                   <View style={{flexDirection:'row', gap:8}}>
-                    {/* View */}
                     <TouchableOpacity 
                       style={styles.circleBtn} 
                       onPress={() => router.push(`/recipe/${item.id}`)}
@@ -215,7 +226,6 @@ const SavedRecipesScreen = () => {
                        <Ionicons name="eye-outline" size={16} color="#64748b" />
                     </TouchableOpacity>
                     
-                    {/* Delete (Real SQL Delete) */}
                     <TouchableOpacity 
                       style={[styles.circleBtn, { backgroundColor: '#fee2e2' }]} 
                       onPress={() => handleRemove(item.id)}
@@ -233,7 +243,7 @@ const SavedRecipesScreen = () => {
   );
 };
 
-// --- STYLE FINAL (ANY MODE ON) ---
+// --- STYLE ---
 const styles: any = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
   header: {
@@ -247,11 +257,9 @@ const styles: any = StyleSheet.create({
   searchButton: { padding: 5, justifyContent: 'center', alignItems: 'center' },
   searchBarContainer: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 12, paddingHorizontal: 12, height: 44 },
   searchInput: { flex: 1, fontFamily: theme.font.medium, fontSize: 14, color: theme.colors.neutral.dark, height: '100%' },
-  
-  // CONTENT
   listContent: { padding: 20, paddingBottom: 100 },
   
-  // CUSTOM CARD STYLE (SESUAI GUIDELINE HTML)
+  // Custom Card
   card: {
     flexDirection: 'row', backgroundColor: '#fff', borderRadius: 16, padding: 12, marginBottom: 16, gap: 12,
     borderWidth: 1, borderColor: '#e2e8f0',
@@ -270,7 +278,6 @@ const styles: any = StyleSheet.create({
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   circleBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
 
-  // EMPTY STATE
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 50 },
   emptyEmoji: { fontSize: 64, marginBottom: 16 },
