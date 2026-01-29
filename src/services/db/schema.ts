@@ -4,18 +4,14 @@ export const schema = {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-
-      -- profile fields
       fullName TEXT,
       bio TEXT,
       avatarUrl TEXT,
       badgePrimary TEXT,
       badgeSecondary TEXT,
-
       created_at TEXT NOT NULL
     );
   `,
-
   session: `
     CREATE TABLE IF NOT EXISTS session (
       id INTEGER PRIMARY KEY NOT NULL,
@@ -24,7 +20,6 @@ export const schema = {
       logged_in_at TEXT
     );
   `,
-
   recipes: `
     CREATE TABLE IF NOT EXISTS recipes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,6 +29,8 @@ export const schema = {
       creatorType TEXT,
       creator_email TEXT,
       cookingTime TEXT,
+      difficulty TEXT DEFAULT 'Medium', -- KOLOM BARU
+      status TEXT DEFAULT 'Draft',      -- KOLOM BARU
       category TEXT,
       isPrivate INTEGER DEFAULT 0,
       rating REAL,
@@ -43,7 +40,6 @@ export const schema = {
       image TEXT
     );
   `,
-
   saved_recipes: `
     CREATE TABLE IF NOT EXISTS saved_recipes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
