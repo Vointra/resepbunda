@@ -35,7 +35,7 @@ Collect contribution data from four primary sources:
 **C. WhatsApp Group Activity:**
 - Prompt user for WhatsApp chat data or activity summary
 - Accept input in various formats:
-  - Chat export files (.txt)
+  - Chat export files (./whatsapp-group-chat-activity.csv)
   - Manual activity summaries
   - Message counts per participant
 - Analyze metrics:
